@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+<head>
+<canvas id="canny">
+
+</canvas>
+</head>
+<body>
+<script>
+    let image = new Image();
+    let canvas = document.getElementById("canny");
+    let ctx = canvas.getContext("2d");
+    image.onload = () => {
+        canvas.width = image.width;
+        canvas.height = image.height;
+        ctx.drawImage(image,0,0);
+    }
+    image.src = "bjork1.png";
+
+    function makeGrayscale(canvas) {
+        let context = canvas.getContext("2d");
+        var imgData = context.getImageData(0,0,canvas.width,canvas.height);
+        var data = imgData.data;
+        for(var i=0; i<data.length; i+=4) {
+            var red = data[i];
+            var green = data[i+1];
+            var blue = data[i+2];
+            let gray = (red * 0.2126 + green * 0.7152 + blue * 0.0722);
+            var alpha = data[i+3];
+            data[i] = data[i+1] = data[i+2] = gray;
+        }
+        context.putImageData(imgData, 0, 0);
+    }
+</script>
+<script src="downscale.js"></script>
+</body>
+</html>
