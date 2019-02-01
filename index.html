@@ -4,18 +4,36 @@
 <canvas id="canny">
 
 </canvas>
+<div>
+<svg id="vector" width="120cm" height="200cm" style="background:black;">
+
+</svg>
+</div>
 </head>
 <body>
 <script>
     let image = new Image();
     let canvas = document.getElementById("canny");
+    let vec = document.getElementById("vector");
     let ctx = canvas.getContext("2d");
+    let dataMap = [];
     image.onload = () => {
         canvas.width = image.width;
         canvas.height = image.height;
+        for(let i = 0;i<canvas.height;i++) {
+            dataMap[i] = [];
+        }
         ctx.drawImage(image,0,0);
     }
     image.src = "bjork1.png";
+
+    function foo(boo) {
+        let newCv = downScaleCanvas(canvas,0.3053435114503817);
+        document.body.prepend(newCv);
+        makeGrayscale(newCv);
+        decimate(newCv);
+       
+    }
 
     function makeGrayscale(canvas) {
         let context = canvas.getContext("2d");
@@ -26,10 +44,48 @@
             var green = data[i+1];
             var blue = data[i+2];
             let gray = (red * 0.2126 + green * 0.7152 + blue * 0.0722);
-            var alpha = data[i+3];
             data[i] = data[i+1] = data[i+2] = gray;
         }
         context.putImageData(imgData, 0, 0);
+    }
+
+    function decimate(canvas) {
+        let context = canvas.getContext("2d");
+        var imgData = context.getImageData(0,0,canvas.width,canvas.height);
+        var data = imgData.data;
+        for(var i=0; i<data.length; i+=4) {
+            let elIndex = i / 4;
+            let x = elIndex%120;
+            let y = (elIndex-x)/120;
+            let gray = data[i];
+            gray /= 25.6;
+            gray = Math.round(gray);
+            //if(gray>7) gray = 7;
+            dataMap[x][y] = gray;
+            gray*=25.6;
+            data[i] = data[i+1] = data[i+2] = gray;
+        }
+        context.putImageData(imgData, 0, 0);
+    }
+
+    function svgize() {
+        for(var i =0;i<dataMap.length;i++) {
+            for(var j=0;j<dataMap[i].length;j++) {
+                createCircle(i,j,dataMap[i][j]);
+            }
+        }
+    }
+
+    function createCircle(x,y,r) {
+        let xPos = 5+x*10;
+        let yPos = 5+y*10;
+        let rad = r/2;
+        let circle = document.createElementNS("http://www.w3.org/2000/svg","circle");
+        circle.setAttributeNS(null,"cx",xPos+"mm");
+        circle.setAttributeNS(null,"cy",yPos+"mm");
+        circle.setAttributeNS(null,"r",rad+"mm");
+        circle.style.fill = "#fff";
+        vec.appendChild(circle);
     }
 </script>
 <script src="downscale.js"></script>
